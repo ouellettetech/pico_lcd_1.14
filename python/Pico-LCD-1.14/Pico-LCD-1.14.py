@@ -12,7 +12,7 @@ CS = 9
 
 class LCD_1inch14(framebuf.FrameBuffer):
     def __init__(self):
-        self.width = 240
+        self.width = 240 
         self.height = 135
         
         self.cs = Pin(CS,Pin.OUT)
@@ -32,6 +32,7 @@ class LCD_1inch14(framebuf.FrameBuffer):
         self.green =   0x001f
         self.blue  =   0xf800
         self.white =   0xffff
+        self.black =   0x0000
         
     def write_cmd(self, cmd):
         self.cs(1)
@@ -48,7 +49,7 @@ class LCD_1inch14(framebuf.FrameBuffer):
         self.cs(1)
 
     def init_display(self):
-        """Initialize dispaly"""  
+        """Initialize display"""  
         self.rst(1)
         self.rst(0)
         self.rst(1)
@@ -151,18 +152,31 @@ class LCD_1inch14(framebuf.FrameBuffer):
         self.cs(1)
   
 if __name__=='__main__':
+    currentMenuItem=0
+    numMenuItems=4
+    lastButton=-1
+
+    def drawMenu():
+        LCD.text("Main Menu",90,40,LCD.green)
+        LCD.text("Select Profile",90,60,LCD.green)
+        LCD.text("...",90,80,LCD.green)
+        LCD.text("Start!",90,100,LCD.green)
+    
+    
+        LCD.text("OK",210,15,LCD.white)
+        LCD.text("BACK",195,110,LCD.white)
+
     pwm = PWM(Pin(BL))
     pwm.freq(1000)
     pwm.duty_u16(32768)#max 65535
 
     LCD = LCD_1inch14()
     #color BRG
-    LCD.fill(LCD.white)
+    LCD.fill(LCD.black)
  
     LCD.show()
-    LCD.text("Raspberry Pi Pico",90,40,LCD.red)
-    LCD.text("PicoGo",90,60,LCD.green)
-    LCD.text("Pico-LCD-1.14",90,80,LCD.blue)
+    drawMenu()
+    
     
     
     
@@ -176,68 +190,97 @@ if __name__=='__main__':
     keyA = Pin(15,Pin.IN,Pin.PULL_UP)
     keyB = Pin(17,Pin.IN,Pin.PULL_UP)
     
-    key2 = Pin(2 ,Pin.IN,Pin.PULL_UP) #上
-    key3 = Pin(3 ,Pin.IN,Pin.PULL_UP)#中
-    key4 = Pin(16 ,Pin.IN,Pin.PULL_UP)#左
-    key5 = Pin(18 ,Pin.IN,Pin.PULL_UP)#下
-    key6 = Pin(20 ,Pin.IN,Pin.PULL_UP)#右
+    key2 = Pin(2 ,Pin.IN,Pin.PULL_UP)#UP
+    key3 = Pin(3 ,Pin.IN,Pin.PULL_UP)#CENTER
+    key4 = Pin(16 ,Pin.IN,Pin.PULL_UP)#LEFT
+    key5 = Pin(18 ,Pin.IN,Pin.PULL_UP)#DOWN
+    key6 = Pin(20 ,Pin.IN,Pin.PULL_UP)#RIGHT
     
     while(1):
         if(keyA.value() == 0):
-            LCD.fill_rect(208,12,20,20,LCD.red)
-            print("A")
+            if(lastButton != 0):
+                LCD.rect(208,12,20,20,LCD.green)
+                print("A")
+                lastButton = 0
         else :
-            LCD.fill_rect(208,12,20,20,LCD.white)
-            LCD.rect(208,12,20,20,LCD.red)
+            if(lastButton == 0 ):
+                lastButton = -1
+            LCD.rect(208,12,20,20,LCD.white)
             
             
         if(keyB.value() == 0):
-            LCD.fill_rect(208,103,20,20,LCD.red)
-            print("B")
+            if(lastButton != 1):
+                LCD.rect(193,103,35,20,LCD.green)
+                print("B")
+                lastButton = 1
         else :
-            LCD.fill_rect(208,103,20,20,LCD.white)
-            LCD.rect(208,103,20,20,LCD.red)
-    
-    
-    
+            if(lastButton == 1):
+                lastButton = -1
+            LCD.rect(193,103,35,20,LCD.white)
     
         if(key2.value() == 0):#上
-            LCD.fill_rect(37,35,20,20,LCD.red)
-            print("UP")
+            if(lastButton != 2):
+                LCD.fill_rect(37,35,20,20,LCD.red)
+                print("UP")
+                currentMenuItem-=1
+                currentMenuItem=currentMenuItem%numMenuItems
+                print(currentMenuItem)
+                lastButton = 2
         else :
+            if(lastButton == 2):
+                lastButton = -1
             LCD.fill_rect(37,35,20,20,LCD.white)
             LCD.rect(37,35,20,20,LCD.red)
             
             
         if(key3.value() == 0):#中
-            LCD.fill_rect(37,60,20,20,LCD.red)
-            print("CTRL")
+            if(lastButton != 3):
+                LCD.fill_rect(37,60,20,20,LCD.red)
+                print("CTRL")
+                lastButton = 3
         else :
+            if(lastButton == 3):
+                lastButton = -1
             LCD.fill_rect(37,60,20,20,LCD.white)
             LCD.rect(37,60,20,20,LCD.red)
             
         
 
         if(key4.value() == 0):#左
-            LCD.fill_rect(12,60,20,20,LCD.red)
-            print("LEFT")
+            if(lastButton != 4):
+                LCD.fill_rect(12,60,20,20,LCD.red)
+                print("LEFT")
+                lastButton = 4
         else :
+            if(lastButton == 4):
+                lastButton = -1
             LCD.fill_rect(12,60,20,20,LCD.white)
             LCD.rect(12,60,20,20,LCD.red)
             
             
         if(key5.value() == 0):#下
-            LCD.fill_rect(37,85,20,20,LCD.red)
-            print("DOWN")
+            if(lastButton != 5):
+                LCD.fill_rect(37,85,20,20,LCD.red)
+                print("DOWN")
+                currentMenuItem+=1
+                currentMenuItem=currentMenuItem%numMenuItems
+                print(currentMenuItem)
+                lastButton = 5
         else :
+            if(lastButton == 5):
+                lastButton = -1
             LCD.fill_rect(37,85,20,20,LCD.white)
             LCD.rect(37,85,20,20,LCD.red)
             
             
         if(key6.value() == 0):#右
-            LCD.fill_rect(62,60,20,20,LCD.red)
-            print("RIGHT")
+            if(lastButton != 6):
+                LCD.fill_rect(62,60,20,20,LCD.red)
+                print("RIGHT")
+                lastButton = 6
         else :
+            if(lastButton == 6):
+                lastButton = -1
             LCD.fill_rect(62,60,20,20,LCD.white)
             LCD.rect(62,60,20,20,LCD.red)
 
