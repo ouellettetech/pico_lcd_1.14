@@ -32,6 +32,7 @@ class LCD_1inch14(framebuf.FrameBuffer):
         self.green =   0x001f
         self.blue  =   0xf800
         self.white =   0xffff
+        self.black =   0x0000
         
     def write_cmd(self, cmd):
         self.cs(1)
